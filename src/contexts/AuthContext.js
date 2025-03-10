@@ -1,44 +1,120 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
-  
-  // For demonstration - in a real app, this would connect to a backend
-  const login = (email, password) => {
-    // Simulate login
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        setCurrentUser({
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Load user data from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  // Save user data to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      // Also set a token when user is logged in
+      localStorage.setItem('token', 'demo-token');
+    } else {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
+  }, [user]);
+
+  const login = async (email, password) => {
+    try {
+      // In a real app, this would make an API call
+      // For demo purposes, we'll simulate a successful login
+      if (email === 'demo@example.com' && password === 'demo123') {
+        const mockUser = {
+          id: '1',
           name: 'Demo User',
-          email: email
-        });
-        resolve();
-      }, 1000);
-    });
+          email,
+          currency: 'USD',
+        };
+        
+        setUser(mockUser);
+        localStorage.setItem('token', 'demo-token');
+        navigate('/app/dashboard');
+        return mockUser;
+      } else {
+        throw new Error('Invalid email or password');
+      }
+    } catch (error) {
+      throw new Error('Invalid email or password');
+    }
   };
-  
-  const signup = (name, email, password) => {
-    // Simulate signup
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        setCurrentUser({
-          name: name,
-          email: email
-        });
-        resolve();
-      }, 1000);
-    });
+
+  const register = async (name, email, password) => {
+    try {
+      // In a real app, this would make an API call
+      // For demo purposes, we'll simulate a successful registration
+      const mockUser = {
+        id: '1',
+        name,
+        email,
+        currency: 'USD',
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('token', 'demo-token');
+      navigate('/app/dashboard');
+      return mockUser;
+    } catch (error) {
+      throw new Error('Registration failed');
+    }
   };
-  
+
   const logout = () => {
-    setCurrentUser(null);
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate('/login');
   };
-  
+
+  const updateProfile = async (updates) => {
+    try {
+      // In a real app, this would make an API call
+      // For demo purposes, we'll update the local state
+      setUser((prev) => ({
+        ...prev,
+        ...updates,
+      }));
+      return true;
+    } catch (error) {
+      throw new Error('Failed to update profile');
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    updateProfile,
+    isAuthenticated: !!user && !!localStorage.getItem('token'),
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, login, signup, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
