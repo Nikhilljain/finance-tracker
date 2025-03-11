@@ -1,9 +1,13 @@
 // Format currency based on user's locale and currency preference
-export const formatCurrency = (amount, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount) => {
+  // Format as Indian currency (₹) with comma separators for Indian numbering system
+  const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: currency,
-  }).format(amount);
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  return formatter.format(amount);
 };
 
 // Format date to a readable string
@@ -103,16 +107,30 @@ export const formatNumber = (number) => {
 // Get a color for a category (for charts and UI elements)
 export const getCategoryColor = (category) => {
   const colors = {
-    Housing: '#2196f3',
-    Transportation: '#f44336',
-    Food: '#4caf50',
-    Utilities: '#ff9800',
-    Insurance: '#9c27b0',
-    Healthcare: '#e91e63',
-    Savings: '#3f51b5',
-    Personal: '#009688',
-    Entertainment: '#ff5722',
-    Other: '#607d8b',
+    // Income and Investments
+    'Income': '#4CAF50',  // Green
+    'Investments': '#2196F3',  // Blue
+    
+    // Essential Expenses
+    'Housing': '#9C27B0',  // Purple
+    'Bills & Utilities': '#FF9800',  // Orange
+    'Transportation': '#F44336',  // Red
+    'Insurance': '#3F51B5',  // Indigo
+    'Healthcare': '#E91E63',  // Pink
+    
+    // Lifestyle
+    'Food & Dining': '#009688',  // Teal
+    'Shopping': '#FF5722',  // Deep Orange
+    'Entertainment': '#673AB7',  // Deep Purple
+    'Education': '#00BCD4',  // Cyan
+    
+    // Financial
+    'Loan Payment': '#795548',  // Brown
+    'EMI': '#607D8B',  // Blue Grey
+    
+    // Others
+    'Other': '#9E9E9E',  // Grey
   };
-  return colors[category] || colors.Other;
+  
+  return colors[category] || colors['Other'];
 }; 

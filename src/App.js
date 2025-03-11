@@ -15,8 +15,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
+import Reports from './pages/Reports';
 import Budget from './pages/Budget';
 import Profile from './pages/Profile';
+import Categories from './pages/Categories';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -31,10 +33,10 @@ export default function App() {
       <Router>
         <AuthProvider>
           <FinanceProvider>
-            <Routes>
+          <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
               {/* Protected Routes */}
@@ -46,10 +48,12 @@ export default function App() {
                       <Routes>
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="transactions" element={<Transactions />} />
+                        <Route path="reports" element={<Reports />} />
                         <Route path="budget" element={<Budget />} />
+                        <Route path="categories" element={<Categories />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="*" element={<Navigate to="/app/dashboard" />} />
-                      </Routes>
+          </Routes>
                     </MainLayout>
                   </ProtectedRoute>
                 }

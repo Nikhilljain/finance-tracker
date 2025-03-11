@@ -17,23 +17,33 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
+  Badge,
+  Tooltip,
+  Stack,
+  ListItemButton,
+  ListItemAvatar,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard,
   Receipt,
   AccountBalance,
+  Category,
+  Assessment,
   Person,
   ExitToApp,
+  Notifications,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/app/dashboard' },
   { text: 'Transactions', icon: <Receipt />, path: '/app/transactions' },
+  { text: 'Reports', icon: <Assessment />, path: '/app/reports' },
   { text: 'Budget', icon: <AccountBalance />, path: '/app/budget' },
+  { text: 'Categories', icon: <Category />, path: '/app/categories' },
 ];
 
 export default function MainLayout({ children }) {
@@ -41,6 +51,7 @@ export default function MainLayout({ children }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,42 +78,96 @@ export default function MainLayout({ children }) {
     logout();
   };
 
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationMenuClose = () => {
+    setNotificationAnchorEl(null);
+  };
+
   const drawer = (
-    <Box>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Avatar 
+          sx={{ 
+            width: 40, 
+            height: 40, 
+            bgcolor: theme.palette.primary.main 
+          }}
+        >
+          FT
+        </Avatar>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
           Finance Tracker
         </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            component={RouterLink}
-            to={item.path}
-            selected={location.pathname === item.path}
-            onClick={() => isMobile && handleDrawerToggle()}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
+      </Box>
+      <Divider sx={{ mx: 2 }} />
+      <List sx={{ px: 2, py: 1, flex: 1 }}>
+        {menuItems.map((item) => {
+          const isSelected = location.pathname === item.path;
+          return (
+            <ListItem
+              button
+              key={item.text}
+              component={RouterLink}
+              to={item.path}
+              selected={isSelected}
+              onClick={() => isMobile && handleDrawerToggle()}
+              sx={{
+                borderRadius: 2,
+                mb: 1,
+                color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                bgcolor: isSelected ? theme.palette.primary.light + '10' : 'transparent',
+                '&:hover': {
+                  bgcolor: isSelected ? theme.palette.primary.light + '20' : theme.palette.action.hover,
+                },
+                '& .MuiListItemIcon-root': {
+                  color: isSelected ? theme.palette.primary.main : theme.palette.text.primary,
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+              <ListItemText 
+                primary={item.text} 
+                primaryTypographyProps={{
+                  fontWeight: isSelected ? 600 : 400,
+                }}
+              />
+            </ListItem>
+          );
+        })}
       </List>
+      <Divider sx={{ mx: 2 }} />
+      <Box sx={{ p: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar sx={{ width: 40, height: 40 }}>
+            {user?.name?.charAt(0) || 'U'}
+          </Avatar>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {user?.name || 'User'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {user?.email || 'user@example.com'}
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -112,21 +177,49 @@ export default function MainLayout({ children }) {
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1 }} />
-          <IconButton
-            onClick={handleProfileMenuOpen}
-            size="small"
-            sx={{ ml: 2 }}
-          >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              {user?.name?.charAt(0) || 'U'}
-            </Avatar>
-          </IconButton>
+          
+          <Box sx={{ flex: 1 }} />
+          
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Tooltip title="Notifications">
+              <IconButton 
+                color="inherit" 
+                size="large"
+                onClick={handleNotificationMenuOpen}
+              >
+                <Badge badgeContent={3} color="error">
+                  <Notifications />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+            
+            <Tooltip title="Profile">
+              <IconButton
+                onClick={handleProfileMenuOpen}
+                size="small"
+                sx={{ ml: 2 }}
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}>
+                  {user?.name?.charAt(0) || 'U'}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+          </Stack>
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleProfileMenuClose}
             onClick={handleProfileMenuClose}
+            PaperProps={{
+              sx: { 
+                mt: 1,
+                boxShadow: theme.shadows[3],
+                minWidth: 200,
+              }
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
             <MenuItem onClick={handleProfileClick}>
               <ListItemIcon>
@@ -134,6 +227,7 @@ export default function MainLayout({ children }) {
               </ListItemIcon>
               Profile
             </MenuItem>
+            <Divider />
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <ExitToApp fontSize="small" />
@@ -153,7 +247,7 @@ export default function MainLayout({ children }) {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
@@ -172,6 +266,7 @@ export default function MainLayout({ children }) {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
+              borderRight: '1px solid rgba(0, 0, 0, 0.05)',
             },
           }}
           open
@@ -186,11 +281,62 @@ export default function MainLayout({ children }) {
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: 8,
+          minHeight: '100vh',
+          bgcolor: 'background.default',
+          mt: { xs: 7, sm: 8 },
         }}
       >
         {children}
       </Box>
+
+      <Menu
+        anchorEl={notificationAnchorEl}
+        open={Boolean(notificationAnchorEl)}
+        onClose={handleNotificationMenuClose}
+        onClick={handleNotificationMenuClose}
+        PaperProps={{
+          sx: { 
+            mt: 1,
+            boxShadow: theme.shadows[3],
+            minWidth: 300,
+            maxHeight: 400,
+          }
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <Typography variant="h6" sx={{ p: 2 }}>Notifications</Typography>
+        <Divider />
+        {[
+          { id: 1, title: 'New Transaction', message: 'You received a new transaction from XYZ Bank', date: '2 hours ago' },
+          { id: 2, title: 'Budget Alert', message: 'You\'ve exceeded your monthly budget for entertainment', date: 'Yesterday' },
+          { id: 3, title: 'System Update', message: 'A new version of the app is available', date: '3 days ago' },
+        ].map((notification) => (
+          <ListItemButton key={notification.id} onClick={() => console.log('Notification clicked:', notification.id)}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
+                {notification.title.charAt(0)}
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary={notification.title}
+              secondary={
+                <React.Fragment>
+                  <Typography
+                    sx={{ display: 'inline' }}
+                    component="span"
+                    variant="body2"
+                    color="text.primary"
+                  >
+                    {notification.message}
+                  </Typography>
+                  {' - ' + notification.date}
+                </React.Fragment>
+              }
+            />
+          </ListItemButton>
+        ))}
+      </Menu>
     </Box>
   );
 } 

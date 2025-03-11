@@ -13,6 +13,11 @@ import {
   MenuItem,
   IconButton,
   Stack,
+  Box,
+  Button,
+  Card,
+  Select,
+  Chip,
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import { useFinance } from '../contexts/FinanceContext';
@@ -23,10 +28,10 @@ import {
   ConfirmDialog,
   AddTransactionDialog,
 } from '../components';
-import { formatCurrency, formatDate } from '../utils/helpers';
+import { formatCurrency, formatDate, getCategoryColor } from '../utils/helpers';
 
 export default function Transactions() {
-  const { transactions, loading, deleteTransaction, CATEGORIES } = useFinance();
+  const { transactions, loading, deleteTransaction, updateTransaction, CATEGORIES } = useFinance();
   
   // State for filtering and pagination
   const [filters, setFilters] = useState({
@@ -92,6 +97,16 @@ export default function Transactions() {
       deleteTransaction(selectedTransaction.id);
       setIsDeleteDialogOpen(false);
       setSelectedTransaction(null);
+    }
+  };
+
+  const handleCategoryChange = (transactionId, newCategory) => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    if (transaction) {
+      updateTransaction(transactionId, {
+        ...transaction,
+        category: newCategory
+      });
     }
   };
 
@@ -185,7 +200,39 @@ export default function Transactions() {
               <TableRow key={transaction.id}>
                 <TableCell>{formatDate(transaction.date)}</TableCell>
                 <TableCell>{transaction.description}</TableCell>
-                <TableCell>{transaction.category}</TableCell>
+                <TableCell>
+                  <Select
+                    value={transaction.category || 'Other'}
+                    onChange={(e) => handleCategoryChange(transaction.id, e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                    renderValue={(selected) => (
+                      <Chip
+                        label={selected}
+                        size="small"
+                        sx={{
+                          backgroundColor: getCategoryColor(selected),
+                          color: 'white',
+                          '& .MuiChip-label': { px: 1 }
+                        }}
+                      />
+                    )}
+                  >
+                    {CATEGORIES.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        <Chip
+                          label={category}
+                          size="small"
+                          sx={{
+                            backgroundColor: getCategoryColor(category),
+                            color: 'white',
+                            '& .MuiChip-label': { px: 1 }
+                          }}
+                        />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
                 <TableCell
                   align="right"
                   sx={{

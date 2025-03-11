@@ -5,15 +5,19 @@ const FinanceContext = createContext();
 
 // Categories for transactions
 export const CATEGORIES = [
+  'Income',
+  'Investments',
   'Housing',
+  'Bills & Utilities',
   'Transportation',
-  'Food',
-  'Utilities',
   'Insurance',
   'Healthcare',
-  'Savings',
-  'Personal',
+  'Food & Dining',
+  'Shopping',
   'Entertainment',
+  'Education',
+  'Loan Payment',
+  'EMI',
   'Other'
 ];
 
